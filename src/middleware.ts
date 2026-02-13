@@ -44,7 +44,12 @@ export async function middleware(request: NextRequest) {
 
     // Protected Routes Logic
     const url = request.nextUrl.clone();
-    if (!session && (url.pathname.startsWith("/dashboard") || url.pathname.startsWith("/focus") || url.pathname.startsWith("/settings"))) {
+
+    // DEMO MODE: Bypass authentication for local development
+    // TODO: Remove this before production deployment
+    const isDemoMode = process.env.NODE_ENV === 'development';
+
+    if (!isDemoMode && !session && (url.pathname.startsWith("/dashboard") || url.pathname.startsWith("/focus") || url.pathname.startsWith("/settings"))) {
         return NextResponse.redirect(new URL("/login", request.url));
     }
 

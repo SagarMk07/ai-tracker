@@ -10,7 +10,7 @@ export default function Home() {
         <p className="text-xl text-muted-foreground max-w-lg mx-auto">
           Protect your attention. Master your craft.
         </p>
-        <Link href="/login">
+        <Link href="/dashboard">
           <button className="px-8 py-3 rounded-full bg-accent text-white font-medium hover:bg-indigo-500 transition-colors shadow-[0_0_20px_rgba(99,102,241,0.3)]">
             Enter Focus Room
           </button>
