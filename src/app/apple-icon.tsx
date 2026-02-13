@@ -27,7 +27,14 @@ export default function Icon() {
                     color: '#6366f1', // Indigo-500
                 }}
             >
-                ●
+                <div
+                    style={{
+                        width: '80px',
+                        height: '80px',
+                        background: '#6366f1',
+                        borderRadius: '50%',
+                    }}
+                />
             </div>
         ),
         // ImageResponse options

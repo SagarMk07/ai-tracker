@@ -28,7 +28,14 @@ export default function Icon() {
                     borderRadius: '50%', // Circular
                 }}
             >
-                ●
+                <div
+                    style={{
+                        width: '16px',
+                        height: '16px',
+                        background: '#6366f1',
+                        borderRadius: '50%',
+                    }}
+                />
             </div>
         ),
         // ImageResponse options
