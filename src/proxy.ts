@@ -1,7 +1,8 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
+    console.log("Proxy executing for:", request.nextUrl.pathname);
     let response = NextResponse.next({
         request: {
             headers: request.headers,
@@ -38,27 +39,28 @@ export async function middleware(request: NextRequest) {
         }
     );
 
-    const {
-        data: { session },
-    } = await supabase.auth.getSession();
+    try {
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
 
-    // Protected Routes Logic
-    const url = request.nextUrl.clone();
+        // Protected Routes Logic
+        const url = request.nextUrl.clone();
 
-    // DEMO MODE: Bypass authentication for local development
-    // TODO: Remove this before production deployment
-    const isDemoMode = process.env.NODE_ENV === 'development';
+        if (!session && (url.pathname.startsWith("/dashboard") || url.pathname.startsWith("/focus") || url.pathname.startsWith("/settings"))) {
+            return NextResponse.redirect(new URL("/login", request.url));
+        }
 
-    if (!isDemoMode && !session && (url.pathname.startsWith("/dashboard") || url.pathname.startsWith("/focus") || url.pathname.startsWith("/settings"))) {
-        return NextResponse.redirect(new URL("/login", request.url));
+        // Auth Routes Logic (Redirect logged in users away from login)
+        if (session && url.pathname === "/login") {
+            return NextResponse.redirect(new URL("/dashboard", request.url));
+        }
+
+        return response;
+    } catch (error) {
+        console.error("Middleware PROXY CRASH:", error);
+        return response; // Fallback to let the request proceed to the page for better error reporting
     }
-
-    // Auth Routes Logic (Redirect logged in users away from login)
-    if (session && url.pathname === "/login") {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
-
-    return response;
 }
 
 export const config = {

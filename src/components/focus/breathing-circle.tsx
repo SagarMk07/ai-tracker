@@ -1,80 +1,80 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
-export function BreathingCircle({ onComplete }: { onComplete: () => void }) {
-    const [phase, setPhase] = useState<"inhale" | "hold" | "exhale">("inhale");
-    const [cycles, setCycles] = useState(0);
-    const MAX_CYCLES = 3;
+const BREATH_PHASES = [
+    { text: "Inhale", duration: 4 },
+    { text: "Hold", duration: 4 },
+    { text: "Exhale", duration: 4 },
+    { text: "Hold", duration: 4 },
+];
+
+export function BreathingCircle() {
+    const [phase, setPhase] = useState(0);
 
     useEffect(() => {
-        // Simple Box Breathing: 4s Inhale, 4s Hold, 4s Exhale
-        // Cycle 1
-        if (cycles >= MAX_CYCLES) {
-            onComplete();
-            return;
-        }
+        const interval = setInterval(() => {
+            setPhase((prev) => (prev + 1) % BREATH_PHASES.length);
+        }, BREATH_PHASES[phase].duration * 1000);
 
-        let timeout: NodeJS.Timeout;
-
-        if (phase === "inhale") {
-            timeout = setTimeout(() => setPhase("hold"), 4000);
-        } else if (phase === "hold") {
-            timeout = setTimeout(() => setPhase("exhale"), 4000);
-        } else if (phase === "exhale") {
-            timeout = setTimeout(() => {
-                setCycles(c => c + 1);
-                setPhase("inhale");
-            }, 4000);
-        }
-
-        return () => clearTimeout(timeout);
-    }, [phase, cycles, onComplete]);
-
-    const text = {
-        inhale: "Inhale...",
-        hold: "Hold...",
-        exhale: "Exhale..."
-    }[phase];
+        return () => clearInterval(interval);
+    }, [phase]);
 
     return (
-        <div className="flex flex-col items-center justify-center h-[400px]">
-            <div className="relative flex items-center justify-center w-64 h-64">
-                {/* Outer Ripple */}
+        <div className="flex flex-col items-center justify-center space-y-8">
+            <div className="relative flex items-center justify-center">
+                {/* Outer Glow */}
                 <motion.div
                     animate={{
-                        scale: phase === "inhale" ? 1.5 : phase === "hold" ? 1.5 : 1,
-                        opacity: phase === "inhale" ? 0.3 : phase === "exhale" ? 0 : 0.3,
+                        scale: phase === 0 ? 1.4 : phase === 2 ? 1 : phase === 1 ? 1.4 : 1,
+                        opacity: phase === 0 ? 0.4 : 0.2,
                     }}
                     transition={{ duration: 4, ease: "easeInOut" }}
-                    className="absolute inset-0 bg-indigo-500/20 rounded-full blur-xl"
+                    className="absolute w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"
                 />
 
-                {/* Core Circle */}
+                {/* Main Circle */}
                 <motion.div
                     animate={{
-                        scale: phase === "inhale" ? 1.2 : phase === "hold" ? 1.2 : 0.8,
+                        scale: phase === 0 ? 1.2 : phase === 2 ? 0.8 : phase === 1 ? 1.2 : 0.8,
                     }}
                     transition={{ duration: 4, ease: "easeInOut" }}
-                    className="w-32 h-32 bg-indigo-500 rounded-full shadow-[0_0_30px_rgba(99,102,241,0.4)] flex items-center justify-center z-10"
+                    className="w-48 h-48 border-2 border-blue-400/30 rounded-full flex items-center justify-center relative overflow-hidden bg-slate-900/40 backdrop-blur-xl shadow-[0_0_50px_rgba(59,130,246,0.1)]"
                 >
+                    {/* Inner Fluid Wave */}
+                    <motion.div
+                        animate={{
+                            y: phase === 0 ? "0%" : phase === 2 ? "100%" : phase === 1 ? "0%" : "100%",
+                        }}
+                        transition={{ duration: 4, ease: "easeInOut" }}
+                        className="absolute bottom-0 left-0 w-full h-full bg-blue-500/10"
+                    />
+
+                    <AnimatePresence mode="wait">
+                        <motion.span
+                            key={phase}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="text-blue-400 font-light text-xl tracking-widest uppercase z-10"
+                        >
+                            {BREATH_PHASES[phase].text}
+                        </motion.span>
+                    </AnimatePresence>
                 </motion.div>
             </div>
 
-            <motion.p
-                key={phase}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="mt-8 text-xl font-light text-indigo-100"
-            >
-                {text}
-            </motion.p>
-
-            <p className="mt-2 text-sm text-slate-600">
-                Cycle {Math.min(cycles + 1, MAX_CYCLES)} of {MAX_CYCLES}
-            </p>
+            {/* Phase Indicators */}
+            <div className="flex gap-2">
+                {BREATH_PHASES.map((_, i) => (
+                    <div
+                        key={i}
+                        className={`w-2 h-2 rounded-full transition-all duration-500 ${i === phase ? "bg-blue-400 w-6" : "bg-slate-800"
+                            }`}
+                    />
+                ))}
+            </div>
         </div>
     );
 }

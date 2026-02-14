@@ -36,8 +36,8 @@ export function AIChatCoach({ context }: AIChatCoachProps) {
                             {/* Header */}
                             <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                    <span className="text-sm font-medium text-white">Focus Coach</span>
+                                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                    <span className="text-sm font-medium text-white">Strategy Assistant</span>
                                 </div>
                                 <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white transition-colors">
                                     <Minimize2 className="w-4 h-4" />
@@ -48,9 +48,9 @@ export function AIChatCoach({ context }: AIChatCoachProps) {
                             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                                 {messages.length === 0 && (
                                     <div className="text-center text-slate-500 mt-10 text-sm space-y-2">
-                                        <p>Ready to strategize?</p>
+                                        <p>Ready to optimize your stack?</p>
                                         <p className="text-xs text-slate-600">
-                                            I know you have {context.tasks?.filter((t: any) => t.status === 'todo').length} tasks today.
+                                            I've analyzed your {context.tools?.length || 0} tools and {context.workflows?.length || 0} workflows.
                                         </p>
                                     </div>
                                 )}

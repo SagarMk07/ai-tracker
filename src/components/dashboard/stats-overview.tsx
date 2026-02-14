@@ -1,65 +1,78 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Activity, Flame, Trophy, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Layers, Zap, Bot, LucideIcon } from "lucide-react";
 
-interface StatsOverviewProps {
-    integrityScore: number;
-    totalFocusMinutes: number;
-    sessionsCompleted: number;
-    streakDays: number;
+const IconMap: Record<string, LucideIcon> = {
+    layers: Layers,
+    zap: Zap,
+    bot: Bot,
+};
+
+interface StatItem {
+    label: string;
+    value: string | number;
+    icon: string; // Changed from LucideIcon to string
+    color: string;
+    subtext?: string;
 }
 
-export function StatsOverview({ integrityScore, totalFocusMinutes, sessionsCompleted, streakDays }: StatsOverviewProps) {
+interface StatsOverviewProps {
+    stats: StatItem[];
+}
+
+export function StatsOverview({ stats }: StatsOverviewProps) {
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard
-                label="Integrity Score"
-                value={`${integrityScore}%`}
-                icon={Activity}
-                color="text-emerald-400"
-                subtext="Keep it up"
-            />
-            <StatCard
-                label="Focus Time"
-                value={`${Math.round(totalFocusMinutes / 60)}h ${totalFocusMinutes % 60}m`}
-                icon={TrendingUp}
-                color="text-indigo-400"
-                subtext="This week"
-            />
-            <StatCard
-                label="Sessions"
-                value={sessionsCompleted.toString()}
-                icon={Trophy}
-                color="text-amber-400"
-                subtext="Completed"
-            />
-            <StatCard
-                label="Streak"
-                value={`${streakDays} Days`}
-                icon={Flame}
-                color="text-rose-400"
-                subtext="You're on fire!"
-            />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {stats.map((stat, index) => (
+                <StatCard
+                    key={index}
+                    label={stat.label}
+                    value={stat.value}
+                    icon={stat.icon}
+                    color={stat.color}
+                    subtext={stat.subtext}
+                    delay={index * 0.1}
+                />
+            ))}
         </div>
     );
 }
 
-function StatCard({ label, value, icon: Icon, color, subtext }: { label: string, value: string, icon: any, color: string, subtext: string }) {
+function StatCard({
+    label,
+    value,
+    icon,
+    color,
+    subtext,
+    delay
+}: {
+    label: string,
+    value: string | number,
+    icon: string, // Changed from LucideIcon to string
+    color: string,
+    subtext?: string,
+    delay: number
+}) {
+    const Icon = IconMap[icon] || Bot;
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-2xl bg-surface/30 border border-white/5 flex flex-col gap-3 backdrop-blur-sm"
+            transition={{ delay }}
+            className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 flex flex-col gap-3 backdrop-blur-sm"
         >
-            <div className="flex items-center gap-2 text-slate-400 text-xs uppercase tracking-wider font-semibold">
-                <Icon className={cn("w-4 h-4", color)} />
+            <div className="flex items-center gap-3 text-slate-400 text-sm font-medium">
+                <div className={cn("p-2 rounded-lg bg-opacity-10", color.replace("text-", "bg-"))}>
+                    <Icon className={cn("w-5 h-5", color)} />
+                </div>
                 {label}
             </div>
             <div>
-                <div className="text-2xl font-bold text-white">{value}</div>
-                <div className="text-xs text-slate-500 mt-1">{subtext}</div>
+                <div className="text-4xl font-light text-white">{value}</div>
+                {subtext && <div className="text-xs text-slate-500 mt-1">{subtext}</div>}
             </div>
         </motion.div>
     );

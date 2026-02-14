@@ -7,29 +7,29 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Focus Guardian AI | Deep Work OS",
-    template: "%s | Focus Guardian"
+    default: "AI Tracker | Intelligent Workflow & Tool OS",
+    template: "%s | AI Tracker"
   },
-  description: "An intelligent deep-work operating system that protects attention. Align intention with action.",
+  description: "A comprehensive platform to organize your AI toolset and automate workflows with intelligent suggestions.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Focus Guardian",
+    title: "AI Tracker",
   },
-  applicationName: "Focus Guardian",
+  applicationName: "AI Tracker",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://focus-guardian.ai",
-    title: "Focus Guardian AI",
-    description: "Master your attention with AI-powered focus sessions.",
-    siteName: "Focus Guardian AI",
+    url: "https://ai-tracker.app",
+    title: "AI Tracker | Deep Work with AI",
+    description: "Master your AI toolstack with intelligent organization and automated workflows.",
+    siteName: "AI Tracker",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Focus Guardian AI",
-    description: "Master your attention with AI-powered focus sessions.",
+    title: "AI Tracker",
+    description: "Master your AI toolstack with intelligent organization and automated workflows.",
   },
 };
 

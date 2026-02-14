@@ -1,28 +1,42 @@
-export interface Task {
+export interface Tool {
     id: string;
     user_id: string;
-    title: string;
+    name: string;
     description?: string;
-    status: "todo" | "in_progress" | "done" | "wishlist";
-    priority: "low" | "medium" | "high";
-    due_date?: string;
+    category?: string;
+    url?: string;
+    pricing_type: 'free' | 'freemium' | 'paid' | 'subscription';
     created_at: string;
 }
 
-export interface FocusSession {
+export interface Workflow {
     id: string;
     user_id: string;
-    intent: string;
-    duration_seconds: number;
-    started_at: string;
-    ended_at?: string;
-    completed: boolean;
-    distraction_count?: number;
+    name: string;
+    description?: string;
+    trigger?: string;
+    actions: WorkflowAction[];
+    created_at: string;
+}
+
+export interface WorkflowAction {
+    type: string;
+    description: string;
+}
+
+export interface AILog {
+    id: string;
+    user_id: string;
+    prompt: string;
+    response?: string;
+    tokens_used?: number;
+    model_used?: string;
+    timestamp: string;
 }
 
 export interface UserProfile {
     id: string;
     email: string;
     full_name?: string;
-    focus_integrity_score: number;
+    avatar_url?: string;
 }

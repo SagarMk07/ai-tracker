@@ -3,8 +3,8 @@
 import { useState, FormEvent, useEffect, useRef } from "react";
 
 export interface ChatContext {
-    tasks: any[];
-    stats: any;
+    tools: any[];
+    workflows: any[];
     userProfile: any;
 }
 
@@ -71,12 +71,12 @@ export function useChat(context: ChatContext) {
         setIsLoading(true);
 
         try {
-            const response = await fetch("/api/chat", {
+            const response = await fetch("/api/ai/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     messages: [...messages, userMessage],
-                    context // Send context to API
+                    context
                 }),
             });
 
