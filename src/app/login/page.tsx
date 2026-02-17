@@ -1,64 +1,44 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-    const [email, setEmail] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
-    const supabase = createClient();
+  const router = useRouter();
 
-    const handleMagicLink = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage(null);
+  const handleClick = () => {
+    console.log("Button clicked - navigating to dashboard");
+    window.location.href = "/dashboard";
+  };
 
-        try {
-            const { error } = await supabase.auth.signInWithOtp({
-                email,
-                options: {
-                    emailRedirectTo: `${window.location.origin}/auth/callback`
-                },
-            });
-            if (error) throw error;
-            setMessage({ text: "Check your email for the magic link.", type: "success" });
-        } catch (error: any) {
-            setMessage({ text: error.message, type: "error" });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="card">
-            <h1>Welcome Back</h1>
-            <p>Sign in to continue</p>
-
-            <form onSubmit={handleMagicLink}>
-                <input
-                    type="email"
-                    placeholder="Enter your email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={loading}
-                />
-                <button type="submit" className="button-primary" disabled={loading}>
-                    {loading ? "Sending..." : "Send Magic Link"}
-                </button>
-            </form>
-
-            {message && (
-                <p style={{
-                    marginTop: '20px',
-                    fontSize: '14px',
-                    color: message.type === 'success' ? '#d4c2ff' : '#ff9494',
-                    opacity: 1
-                }}>
-                    {message.text}
-                </p>
-            )}
+  return (
+    <main className="min-h-screen flex items-center justify-center p-6">
+      <section className="panel w-full max-w-md p-8 space-y-5 text-center">
+        <div>
+          <p className="text-xs tracking-[0.2em] uppercase text-slate-400">Focus Guardian AI</p>
+          <h1 className="text-3xl mt-2">Development Mode</h1>
         </div>
-    );
+
+        <div className="space-y-4">
+          <p className="text-slate-300">Authentication is temporarily disabled for testing.</p>
+
+          <button
+            onClick={handleClick}
+            className="block w-full rounded-xl bg-[var(--accent)] py-3 font-semibold text-slate-950 hover:opacity-90 transition-opacity cursor-pointer"
+          >
+            Go to Dashboard
+          </button>
+
+          <div className="text-sm text-slate-400 space-y-2">
+            <p>⚠️ Auth bypass is active</p>
+            <p>Click the button above to access the dashboard</p>
+          </div>
+
+          <div className="text-xs text-slate-500 mt-4">
+            <p>If the button doesn't work, manually go to:</p>
+            <code className="text-slate-300">http://localhost:3000/dashboard</code>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
 }

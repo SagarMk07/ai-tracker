@@ -1,55 +1,138 @@
-import { OpenAI } from "openai";
+import "server-only";
+import OpenAI from "openai";
+import type { PersonalityMode, TaskIntelligence } from "@/types";
+import { getEnvVar } from "@/lib/env";
 
-const apiKey = process.env.OPENAI_API_KEY;
+const client = new OpenAI({ apiKey: getEnvVar("OPENAI_API_KEY") });
 
-if (!apiKey || apiKey === "your_openai_api_key_here") {
-    console.error("CRITICAL: OPENAI_API_KEY is missing or invalid in .env.local");
+function parseJSON<T>(value: string | null, fallback: T): T {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
 }
 
-export const openai = new OpenAI({
-    apiKey: apiKey || "dummy_key_for_build",
-});
-
-export async function generateSuggestion(prompt: string) {
-    const res = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [{ role: "user", content: prompt }],
-    });
-    return res.choices[0].message?.content;
+function personalityInstruction(mode: PersonalityMode) {
+  if (mode === "soft") return "Supportive and compassionate with gentle accountability.";
+  if (mode === "ruthless") return "Direct, firm, and accountability-first. No fluff.";
+  return "Tactical and practical with concise, execution-focused coaching.";
 }
 
-export interface WorkflowRecommendation {
-    name: string;
-    description: string;
-    trigger: string;
-    actions: { type: string; description: string }[];
+export async function generateIntentionStatement(input: {
+  goal: string;
+  durationMinutes: number;
+  riskFactors: string[];
+  personality: PersonalityMode;
+}) {
+  const completion = await client.chat.completions.create({
+    model: "gpt-4o-mini",
+    temperature: 0.4,
+    messages: [
+      {
+        role: "system",
+        content: `You are Focus Guardian AI. ${personalityInstruction(input.personality)} Return one concise intention statement (max 30 words).`,
+      },
+      {
+        role: "user",
+        content: `Goal: ${input.goal}\nDuration: ${input.durationMinutes} minutes\nRisk factors: ${input.riskFactors.join(", ") || "none"}`,
+      },
+    ],
+  });
+
+  return completion.choices[0]?.message?.content?.trim() || `I will complete ${input.goal} in ${input.durationMinutes} minutes with full focus.`;
 }
 
-export async function generateWorkflowRecommendations(toolNames: string[]): Promise<WorkflowRecommendation[]> {
-    const prompt = `Given these AI tools: ${toolNames.join(", ")}, suggest 3 creative workflows that integrate them. 
-    Return the response as a JSON array of objects with the following structure:
-    [{ "name": "string", "description": "string", "trigger": "string", "actions": [{ "type": "string", "description": "string" }] }]`;
+export async function generateSessionReflection(input: {
+  goal: string;
+  durationMinutes: number;
+  completed: boolean;
+  distractions: Array<{ distractionType: string; intensity: number }>;
+  personality: PersonalityMode;
+}) {
+  const completion = await client.chat.completions.create({
+    model: "gpt-4o-mini",
+    temperature: 0.3,
+    messages: [
+      {
+        role: "system",
+        content: `You are Focus Guardian AI. ${personalityInstruction(input.personality)} Return JSON with keys: summary:string,wins:string[],blockers:string[],nextAction:string`,
+      },
+      {
+        role: "user",
+        content: `Goal: ${input.goal}\nPlanned duration: ${input.durationMinutes}\nCompleted: ${input.completed}\nDistractions: ${JSON.stringify(input.distractions)}`,
+      },
+    ],
+    response_format: { type: "json_object" },
+  });
 
-    try {
-        const response = await openai.chat.completions.create({
-            model: "gpt-4-turbo-preview", // or "gpt-3.5-turbo"
-            messages: [
-                { role: "system", content: "You are an expert AI architect who designs efficient workflows using modern AI tools." },
-                { role: "user", content: prompt }
-            ],
-            response_format: { type: "json_object" },
-        });
+  return parseJSON(completion.choices[0]?.message?.content, {
+    summary: input.completed ? "Session completed with acceptable focus." : "Session was incomplete and needs process adjustment.",
+    wins: input.completed ? ["You showed execution consistency."] : ["You started despite resistance."],
+    blockers: ["Attention drift"],
+    nextAction: "Schedule the next 25-minute block now.",
+  });
+}
 
-        const content = response.choices[0].message.content;
-        if (!content) return [];
+export async function generateWeeklyAccountabilitySummary(input: {
+  weeklyFocusHours: number;
+  completionRate: number;
+  distractionCount: number;
+  streakDays: number;
+  personality: PersonalityMode;
+}) {
+  const completion = await client.chat.completions.create({
+    model: "gpt-4o-mini",
+    temperature: 0.4,
+    messages: [
+      {
+        role: "system",
+        content: `You are Focus Guardian AI. ${personalityInstruction(input.personality)} Return JSON with keys: summary:string,priorities:string[],riskAlert:string`,
+      },
+      {
+        role: "user",
+        content: JSON.stringify(input),
+      },
+    ],
+    response_format: { type: "json_object" },
+  });
 
-        const parsed = JSON.parse(content);
-        // The AI might wrap the array in a key, let's normalize
-        const workflows = Array.isArray(parsed) ? parsed : parsed.workflows || Object.values(parsed)[0];
+  return parseJSON(completion.choices[0]?.message?.content, {
+    summary: "This week shows progress, but consistency can tighten.",
+    priorities: ["Protect morning focus block", "Reduce context switching", "End each day with tomorrow plan"],
+    riskAlert: "If distraction frequency climbs next week, reduce session durations by 10 minutes temporarily.",
+  });
+}
 
-        return Array.isArray(workflows) ? workflows : [];
-    } catch (error) {
-        console.error("Error generating workflow recommendations:", error);
-        return [];
-    }
+export async function generateTaskIntelligence(input: {
+  goal: string;
+  availableWindows?: string[];
+  personality: PersonalityMode;
+}): Promise<TaskIntelligence> {
+  const completion = await client.chat.completions.create({
+    model: "gpt-4o-mini",
+    temperature: 0.3,
+    messages: [
+      {
+        role: "system",
+        content: `You are Focus Guardian AI. ${personalityInstruction(input.personality)} Return JSON with keys: difficultyScore:number,suggestedTime:string,focusBlocks:{title:string,minutes:number,reason:string}[]`,
+      },
+      {
+        role: "user",
+        content: `Goal: ${input.goal}\nAvailable windows: ${(input.availableWindows || []).join(", ") || "none"}`,
+      },
+    ],
+    response_format: { type: "json_object" },
+  });
+
+  return parseJSON(completion.choices[0]?.message?.content, {
+    difficultyScore: 6,
+    suggestedTime: "09:00-11:00",
+    focusBlocks: [
+      { title: "Clarify deliverable", minutes: 20, reason: "Remove ambiguity before execution" },
+      { title: "Deep execution", minutes: 60, reason: "Core progress block" },
+      { title: "Review and close", minutes: 20, reason: "Quality pass and next-step capture" },
+    ],
+  });
 }

@@ -1,48 +1,35 @@
-import { ImageResponse } from 'next/og';
+import { ImageResponse } from "next/og";
 
-// Route segment config
-export const runtime = 'edge';
+export const runtime = "edge";
 
-// Image metadata
 export const size = {
-    width: 32,
-    height: 32,
+  width: 32,
+  height: 32,
 };
-export const contentType = 'image/png';
 
-// Image generation
+export const contentType = "image/png";
+
 export default function Icon() {
-    return new ImageResponse(
-        (
-            // ImageResponse JSX element
-            <div
-                style={{
-                    fontSize: 24,
-                    background: '#0B1220',
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#6366f1', // Indigo-500
-                    borderRadius: '50%', // Circular
-                }}
-            >
-                <div
-                    style={{
-                        width: '16px',
-                        height: '16px',
-                        background: '#6366f1',
-                        borderRadius: '50%',
-                    }}
-                />
-            </div>
-        ),
-        // ImageResponse options
-        {
-            // For convenience, we can re-use the exported icons size metadata
-            // config to also set the ImageResponse's width and height.
-            ...size,
-        }
-    );
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          fontSize: 16,
+          background: "#080b12",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#77e3c8",
+          borderRadius: "50%",
+        }}
+      >
+        FG
+      </div>
+    ),
+    {
+      ...size,
+    }
+  );
 }

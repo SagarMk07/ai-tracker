@@ -1,41 +1,28 @@
 import type { Metadata } from "next";
+import { Space_Grotesk, Sora } from "next/font/google";
 import "./globals.css";
+import { validateEnv } from "@/lib/env";
+
+const sora = Sora({
+  subsets: ["latin"],
+  variable: "--font-heading",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-body",
+});
 
 export const metadata: Metadata = {
   title: {
-    default: "AI Tracker | Intelligent Workflow & Tool OS",
-    template: "%s | AI Tracker"
+    default: "Focus Guardian AI",
+    template: "%s | Focus Guardian AI",
   },
-  description: "A comprehensive platform to organize your AI toolset and automate workflows with intelligent suggestions.",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "AI Tracker",
-  },
-  applicationName: "AI Tracker",
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: "https://ai-tracker.app",
-    title: "AI Tracker | Deep Work with AI",
-    description: "Master your AI toolstack with intelligent organization and automated workflows.",
-    siteName: "AI Tracker",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AI Tracker",
-    description: "Master your AI toolstack with intelligent organization and automated workflows.",
-  },
+  description: "AI-powered deep work accountability and cognitive optimization.",
+  applicationName: "Focus Guardian AI",
 };
 
-export const viewport = {
-  themeColor: "#0B1220",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false, // App-like feel
-};
+validateEnv();
 
 export default function RootLayout({
   children,
@@ -43,12 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        <div className="app-container">
-          {children}
-        </div>
-      </body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${sora.variable} ${spaceGrotesk.variable}`}>{children}</body>
     </html>
   );
 }

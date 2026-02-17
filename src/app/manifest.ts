@@ -1,25 +1,25 @@
-import { MetadataRoute } from 'next';
+import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
-    return {
-        name: 'Focus Guardian AI',
-        short_name: 'Focus',
-        description: 'Command Center for the Soul. Align intention with action.',
-        start_url: '/',
-        display: 'standalone',
-        background_color: '#0B1220',
-        theme_color: '#0B1220',
-        icons: [
-            {
-                src: '/icon',
-                sizes: 'any',
-                type: 'image/png',
-            },
-            {
-                src: '/apple-icon',
-                sizes: 'any',
-                type: 'image/png',
-            },
-        ],
-    };
+  return {
+    name: "Focus Guardian AI",
+    short_name: "FocusGuardian",
+    description: "AI-powered deep work accountability and cognitive optimization system.",
+    start_url: "/",
+    display: "standalone",
+    background_color: "#080b12",
+    theme_color: "#080b12",
+    icons: [
+      {
+        src: "/icon",
+        sizes: "any",
+        type: "image/png",
+      },
+      {
+        src: "/apple-icon",
+        sizes: "any",
+        type: "image/png",
+      },
+    ],
+  };
 }

@@ -1,16 +1,39 @@
-import { FocusRoomImpl } from "@/components/focus/focus-room-impl";
-import { createServerClientComponent } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { ImmersiveSession } from "@/components/session/immersive-session";
+import { requireUser } from "@/lib/supabase/server";
+import type { FocusSession } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function FocusPage() {
-    const supabase = await createServerClientComponent();
-    const { data: { session } } = await supabase.auth.getSession();
+export default async function FocusPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session?: string }>;
+}) {
+  const { user, supabase } = await requireUser();
+  const { session: sessionId } = await searchParams;
 
-    if (!session) {
-        redirect("/login");
-    }
+  let query = supabase.from("focus_sessions").select("*").eq("user_id", user.id);
+  if (sessionId) {
+    query = query.eq("id", sessionId);
+  } else {
+    query = query.in("status", ["in_progress"]).order("created_at", { ascending: false }).limit(1);
+  }
 
-    return <FocusRoomImpl />;
+  const { data } = await query;
+
+  const session = (data?.[0] || null) as FocusSession | null;
+
+  if (!session) {
+    redirect("/dashboard");
+  }
+
+  return (
+    <ImmersiveSession
+      sessionId={session.id}
+      goal={session.goal}
+      intention={session.intention || `Focus on ${session.goal}`}
+      durationMinutes={session.duration_minutes}
+    />
+  );
 }

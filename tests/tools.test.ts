@@ -1,23 +1,46 @@
-import { describe, it, expect, vi } from "vitest";
-import { getTools } from "../src/lib/db";
+import { describe, expect, it } from "vitest";
+import { buildDashboardSnapshot } from "../src/lib/metrics";
+import type { FocusSession } from "../src/types";
 
-// Mock Supabase client
-vi.mock("../src/lib/supabaseClient", () => ({
-    supabaseClient: {
-        from: vi.fn().mockReturnThis(),
-        insert: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockResolvedValue({
-            data: [{ id: "123", user_id: "fakeid123", name: "Test Tool" }],
-            error: null
-        }),
-    },
-}));
+describe("buildDashboardSnapshot", () => {
+  it("computes weekly focus and completion rate", () => {
+    const now = new Date().toISOString();
 
-describe("Tools Database Access", () => {
-    it("fetches tools for a user", async () => {
-        const fakeUser = "fakeid123";
-        const tools = await getTools(fakeUser);
-        expect(tools[0].name).toBe("Test Tool");
-    });
+    const sessions: FocusSession[] = [
+      {
+        id: "1",
+        user_id: "u1",
+        goal: "Write architecture doc",
+        duration_minutes: 50,
+        risk_factors: [],
+        intention_statement: null,
+        status: "completed",
+        started_at: now,
+        ended_at: now,
+        recovered: false,
+        created_at: now,
+        updated_at: now,
+      },
+      {
+        id: "2",
+        user_id: "u1",
+        goal: "Design API",
+        duration_minutes: 25,
+        risk_factors: [],
+        intention_statement: null,
+        status: "incomplete",
+        started_at: now,
+        ended_at: now,
+        recovered: false,
+        created_at: now,
+        updated_at: now,
+      },
+    ];
+
+    const snapshot = buildDashboardSnapshot(sessions, 3);
+
+    expect(snapshot.weeklyFocusHours).toBeGreaterThan(0);
+    expect(snapshot.completionRate).toBe(50);
+    expect(snapshot.distractionCount).toBe(3);
+  });
 });

@@ -1,19 +1,13 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
-export default function NotFound() {
-    return (
-        <div className="min-h-screen flex items-center justify-center text-foreground p-6 text-center">
-            <div className="space-y-6 max-w-md">
-                <h1 className="text-6xl font-light tracking-tighter text-blue-500">404</h1>
-                <div className="space-y-2">
-                    <h2 className="text-2xl font-light text-white">Page Not Found</h2>
-                    <p className="text-slate-400">The portal you're looking for doesn't exist or has been moved.</p>
-                </div>
-                <Button className="rounded-full bg-blue-600 px-8" asChild>
-                    <Link href="/dashboard">Back to Dashboard</Link>
-                </Button>
-            </div>
-        </div>
-    );
+export default function NotFoundPage() {
+  return (
+    <main className="min-h-screen flex items-center justify-center p-6">
+      <section className="panel max-w-lg p-8 text-center space-y-4">
+        <p className="text-sm uppercase tracking-[0.2em] text-slate-400">404</p>
+        <h1 className="text-3xl">Page not found</h1>
+        <Link href="/dashboard" className="inline-block rounded-xl bg-[var(--accent)] px-4 py-2 text-slate-950 font-semibold">Go to dashboard</Link>
+      </section>
+    </main>
+  );
 }

@@ -3,44 +3,64 @@
 @tailwind utilities;
 
 :root {
-  --background: #020617;
-  --foreground: #F8FAFC;
-}
-
-@layer base {
-  body {
-    @apply text-foreground antialiased;
-    min-height: 100vh;
-    background:
-      radial-gradient(circle at 50% 30%,
-        rgba(210, 190, 255, 0.9) 0%,
-        rgba(176, 140, 230, 0.9) 40%,
-        rgba(142, 96, 200, 0.95) 70%,
-        rgba(110, 70, 170, 1) 100%);
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-attachment: fixed;
-  }
+  --bg: #080b12;
+  --bg-soft: #111521;
+  --panel: #121828;
+  --line: #2a3145;
+  --text: #f3f5f8;
+  --muted: #9ea7bd;
+  --accent: #77e3c8;
+  --accent-strong: #43c8a8;
+  --danger: #ff7a8a;
 }
 
 * {
-  @apply transition-colors duration-200;
+  box-sizing: border-box;
 }
 
-/* Custom Scrollbar */
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-body), sans-serif;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(119, 227, 200, 0.14), transparent 65%),
+    radial-gradient(900px 500px at 100% 0%, rgba(105, 130, 255, 0.1), transparent 55%),
+    linear-gradient(160deg, #080b12 0%, #0e1320 45%, #0b111c 100%);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading), sans-serif;
+  letter-spacing: -0.03em;
+}
+
+.panel {
+  background: linear-gradient(180deg, rgba(18, 24, 40, 0.96), rgba(12, 17, 30, 0.96));
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+
+.grid-overlay {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
 }
 
-::-webkit-scrollbar-track {
-  background: #070B14;
-}
-
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 4px;
+  background: #2f3b57;
+  border-radius: 999px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+::-webkit-scrollbar-track {
+  background: #090d15;
 }
