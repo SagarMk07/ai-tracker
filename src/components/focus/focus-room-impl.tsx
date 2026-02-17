@@ -76,12 +76,12 @@ export function FocusRoomImpl() {
     }, [state, timeLeft]);
 
     return (
-        <div className="min-h-screen bg-[#020617] text-white flex flex-col font-inter selection:bg-blue-500/30 overflow-hidden relative">
+        <div className="min-h-screen text-white flex flex-col font-inter selection:bg-blue-500/30 overflow-hidden relative">
             {/* Premium Atmospheric Background */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-purple-600/10 rounded-full blur-[120px] animate-pulse-slow" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#020617_80%)] opacity-60" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] opacity-60" />
             </div>
 
             {/* Minimal Header */}

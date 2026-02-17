@@ -116,7 +116,7 @@ export default function EditWorkflowPage() {
     if (fetching) return <div className="p-12 text-center text-slate-500">Loading workflow...</div>;
 
     return (
-        <main className="min-h-screen bg-background text-foreground p-6 md:p-12">
+        <main className="min-h-screen text-foreground p-6 md:p-12">
             <div className="max-w-3xl mx-auto space-y-8">
 
                 <div className="flex items-center justify-between">

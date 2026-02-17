@@ -57,7 +57,7 @@ export default async function DashboardPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[#020617] text-foreground p-6 md:p-12 relative overflow-hidden">
+        <main className="min-h-screen text-foreground p-6 md:p-12 relative overflow-hidden">
             {/* Ambient Background Elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/5 rounded-full blur-[120px]" />

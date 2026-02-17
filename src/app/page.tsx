@@ -4,7 +4,7 @@ import { Bot, Zap, Layout, ArrowRight, Sparkles } from "lucide-react";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 relative overflow-hidden bg-[#020617] selection:bg-blue-500/30">
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 relative overflow-hidden selection:bg-blue-500/30">
       {/* Premium Atmospheric Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Primary Ambient Glows */}
@@ -16,7 +16,7 @@ export default function Home() {
         <div className="absolute bottom-1/3 right-1/4 w-40 h-40 bg-purple-400/5 rounded-full blur-3xl animate-float" />
 
         {/* Radial Mesh Overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#020617_80%)] opacity-60" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] opacity-60" />
       </div>
 
       <div className="z-10 text-center space-y-16 max-w-5xl">

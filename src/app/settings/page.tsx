@@ -20,7 +20,7 @@ export default async function SettingsPage() {
         .single() : { data: null };
 
     return (
-        <main className="min-h-screen bg-background text-foreground p-6 md:p-12">
+        <main className="min-h-screen text-foreground p-6 md:p-12">
             <div className="max-w-4xl mx-auto space-y-8">
 
                 <div className="flex items-center gap-4">
