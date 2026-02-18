@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser } from "@/services/supabaseServer";
 import type { UserProfile } from "@/types";
 import { PersonalitySelector } from "@/components/analytics/personality-selector";
 import { AppSidebar } from "@/components/navigation/app-sidebar";

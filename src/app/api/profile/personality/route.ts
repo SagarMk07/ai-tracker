@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ensureUserProfile, requireUser } from "@/lib/supabase/server";
+import { ensureUserProfile, requireUser } from "@/services/supabaseServer";
 import type { PersonalityMode } from "@/types";
 
 export async function PATCH(request: Request) {
@@ -23,5 +23,5 @@ export async function PATCH(request: Request) {
       { error: error instanceof Error ? error.message : "Server error" },
       { status: 500 },
     );
-    }
+  }
 }

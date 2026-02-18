@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
-import { generateTaskIntelligence } from "@/lib/openai";
+import { requireUser } from "@/services/supabaseServer";
+import { streamWeeklyAccountabilityNarrative, generateWeeklyAccountabilitySummary, generateTaskIntelligence } from "@/services/aiClient";
 
 export async function POST(request: Request) {
   try {

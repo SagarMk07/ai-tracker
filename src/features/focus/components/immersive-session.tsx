@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import FocusTimer from "@/features/focus/components/focus-timer";
 import { useFocusTimer } from "@/hooks/use-focus-timer";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { X, CheckCircle, AlertCircle } from "lucide-react";
+import { voice } from "@/services/voice";
 
 interface ImmersiveSessionProps {
   sessionId: string;
@@ -16,13 +18,26 @@ interface ImmersiveSessionProps {
 export function ImmersiveSession({ sessionId, goal, intention, durationMinutes }: ImmersiveSessionProps) {
   const router = useRouter();
   const [isReflecting, setIsReflecting] = useState(false);
+  const [isSessionDone, setIsSessionDone] = useState(false);
   const [distractionCount, setDistractionCount] = useState(0);
   const [reflectionSyncing, setReflectionSyncing] = useState(false);
+
+  useEffect(() => {
+    // Announce start
+    voice.speak(`Starting focus session. ${goal}. ${durationMinutes} minutes.`);
+  }, []); // Run once on mount
 
   const { timeLeft, isActive, isPaused, toggle, formatTime, progress } = useFocusTimer({
     sessionId,
     durationSeconds: durationMinutes * 60,
-    onComplete: () => setIsReflecting(true),
+    onComplete: () => {
+      setIsSessionDone(true);
+      voice.speak("Session complete. Great work.");
+      // Allow cinematic animation to play for 5 seconds before showing reflection
+      setTimeout(() => {
+        setIsReflecting(true);
+      }, 5000);
+    },
   });
 
   async function handleAbandon() {
@@ -79,19 +94,19 @@ export function ImmersiveSession({ sessionId, goal, intention, durationMinutes }
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
+    <main
+      className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center p-6 text-center"
+      style={{
+        background: `
+          radial-gradient(circle at center, rgba(59,130,246,0.15) 0%, transparent 40%),
+          radial-gradient(circle at 80% 20%, rgba(99,102,241,0.12) 0%, transparent 50%),
+          #020617
+        `
+      }}
+    >
 
-      {/* Dynamic Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.div
-          animate={{
-            opacity: isActive ? 0.4 : 0.1,
-            scale: isActive ? 1.1 : 1,
-          }}
-          transition={{ duration: 4, repeat: Infinity, repeatType: "reverse" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--accent)] rounded-full blur-[120px] opacity-10"
-        />
-      </div>
+      {/* Background Glow */}
+      <div className="absolute w-[500px] h-[500px] bg-indigo-500/20 blur-[180px] rounded-full animate-pulse pointer-events-none" />
 
       {/* Header */}
       <header className="absolute top-6 left-6 right-6 flex justify-between items-center z-10">
@@ -114,30 +129,18 @@ export function ImmersiveSession({ sessionId, goal, intention, durationMinutes }
 
         {/* Timer Display */}
         <div className="relative group cursor-pointer" onClick={toggle}>
-          {/* Progress Ring */}
-          <svg className="w-80 h-80 transform -rotate-90">
-            <circle cx="160" cy="160" r="156" stroke="currentColor" strokeWidth="2" fill="transparent" className="text-slate-800" />
-            <motion.circle
-              cx="160" cy="160" r="156"
-              stroke="currentColor" strokeWidth="4"
-              fill="transparent"
-              className="text-[var(--accent)]"
-              strokeDasharray={980}
-              strokeDashoffset={980 - (980 * progress / 100)}
-              initial={{ strokeDashoffset: 980 }}
-              animate={{ strokeDashoffset: 980 - (980 * progress / 100) }}
-              transition={{ duration: 1, ease: "linear" }}
-            />
-          </svg>
+          <FocusTimer
+            timeLeft={timeLeft}
+            duration={durationMinutes * 60}
+            isActive={isActive}
+            isComplete={isSessionDone}
+          />
 
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-7xl font-light tracking-tighter tabular-nums text-white">
-              {formatTime()}
-            </span>
-            <span className="text-sm uppercase tracking-widest text-slate-500 mt-2">
-              {isActive ? "Deep Work" : "Paused"}
-            </span>
-          </div>
+          {!isActive && !isSessionDone && (
+            <div className="absolute inset-x-0 -bottom-12 text-sm uppercase tracking-widest text-slate-500">
+              Paused
+            </div>
+          )}
         </div>
 
         {/* Controls */}

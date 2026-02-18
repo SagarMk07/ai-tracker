@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { ImmersiveSession } from "@/components/session/immersive-session";
-import { requireUser } from "@/lib/supabase/server";
+import { ImmersiveSession } from "@/features/focus/components/immersive-session";
+import { requireUser } from "@/services/supabaseServer";
 import type { FocusSession } from "@/types";
 
 export const dynamic = "force-dynamic";

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
-import { streamWeeklyAccountabilityNarrative } from "@/lib/openai";
+import { requireUser } from "@/services/supabaseServer";
+import { streamWeeklyAccountabilityNarrative } from "@/services/aiClient";
 import type { PersonalityMode } from "@/types";
 import { loadWeeklyAccountabilityInput } from "../_metrics";
 

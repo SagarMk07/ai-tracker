@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser } from "@/services/supabaseServer";
 import { buildDashboardSnapshot } from "@/lib/metrics";
 import type { FocusSession, PersonalityMode } from "@/types";
-import { CreateSessionModal } from "@/components/session/create-session-modal";
-import { SmartTaskInput } from "@/components/tasks/smart-task-input";
+import { CreateSessionModal } from "@/features/focus/components/create-session-modal";
+import { SmartTaskInput } from "@/features/tasks/components/smart-task-input";
 import { MetricCard } from "@/components/analytics/metric-card";
 import { WeeklyFocusChart } from "@/components/analytics/weekly-focus-chart";
 import { DistractionFrequency } from "@/components/analytics/distraction-frequency";

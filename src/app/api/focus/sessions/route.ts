@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { ensureUserProfile, requireUser } from "@/lib/supabase/server";
-import { generateIntentionStatement } from "@/lib/openai";
+import { ensureUserProfile, requireUser } from "@/services/supabaseServer";
+import { generateIntentionStatement } from "@/services/aiClient";
 import type { PersonalityMode } from "@/types";
 
 export async function POST(request: Request) {

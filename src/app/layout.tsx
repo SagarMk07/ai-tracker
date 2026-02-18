@@ -2,36 +2,40 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Sora } from "next/font/google";
 import "./globals.css";
 import { validateEnv } from "@/lib/env";
+import { AIChat } from "@/features/ai/components/ai-chat";
 
 const sora = Sora({
-  subsets: ["latin"],
-  variable: "--font-heading",
+    subsets: ["latin"],
+    variable: "--font-heading",
 });
 
 const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-body",
+    subsets: ["latin"],
+    variable: "--font-body",
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "Focus Guardian AI",
-    template: "%s | Focus Guardian AI",
-  },
-  description: "AI-powered deep work accountability and cognitive optimization.",
-  applicationName: "Focus Guardian AI",
+    title: {
+        default: "Focus Guardian AI",
+        template: "%s | Focus Guardian AI",
+    },
+    description: "AI-powered deep work accountability and cognitive optimization.",
+    applicationName: "Focus Guardian AI",
 };
 
 validateEnv();
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${sora.variable} ${spaceGrotesk.variable}`}>{children}</body>
-    </html>
-  );
+    return (
+        <html lang="en" suppressHydrationWarning>
+            <body className={`${sora.variable} ${spaceGrotesk.variable} antialiased`}>
+                {children}
+                <AIChat />
+            </body>
+        </html>
+    );
 }

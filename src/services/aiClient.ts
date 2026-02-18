@@ -143,7 +143,7 @@ export async function generateTaskIntelligence(input: {
     messages: [
       {
         role: "system",
-        content: `You are Focus Guardian AI. ${personalityInstruction(input.personality)} Return JSON with keys: difficultyScore:number,suggestedTime:string,focusBlocks:{title:string,minutes:number,reason:string}[]`,
+        content: `You are Focus Guardian AI. ${personalityInstruction(input.personality)} Return JSON with keys: difficultyScore:number,suggestedTime:string,focusBlocks:{title:string,minutes:number,reason:string}[]. There must be exactly 3 focus blocks.`,
       },
       {
         role: "user",

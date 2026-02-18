@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useTasks } from "@/hooks/use-tasks";
 
 interface SmartTaskInputProps {
   personalityMode: PersonalityMode;
@@ -35,18 +36,15 @@ export function SmartTaskInput({ personalityMode }: SmartTaskInputProps) {
     });
   }
 
+  const { addTask } = useTasks();
+
   function handleSave() {
     startSaving(async () => {
-      await fetch("/api/tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: input,
-          difficultyScore: intelligence?.difficultyScore,
-          estimatedMinutes: intelligence?.focusBlocks.reduce((sum, block) => sum + block.minutes, 0),
-          subTasks: intelligence?.focusBlocks,
-          suggestedTime: intelligence?.suggestedTime,
-        }),
+      await addTask(input, {
+        difficultyScore: intelligence?.difficultyScore,
+        estimatedMinutes: intelligence?.focusBlocks.reduce((sum, block) => sum + block.minutes, 0),
+        subTasks: intelligence?.focusBlocks,
+        suggestedTime: intelligence?.suggestedTime,
       });
 
       setInput("");
