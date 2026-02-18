@@ -1,66 +1,68 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { generateWeeklyAccountabilitySummary } from "@/lib/openai";
-import { PersonalityMode } from "@/types";
+import type { PersonalityMode } from "@/types";
+import { loadWeeklyAccountabilityInput } from "./_metrics";
 
 export async function POST(request: Request) {
   try {
     const { user, supabase } = await requireUser();
     const body = await request.json();
-    const personality = (body.personalityMode as PersonalityMode) || "tactical";
+    const requestedMode = body.personalityMode as PersonalityMode | undefined;
 
-    // Date range: last 7 days
-    const now = new Date();
-    const info = new Date(now);
-    info.setDate(now.getDate() - 7);
-    const startDate = info.toISOString();
+    const metrics = await loadWeeklyAccountabilityInput(user, supabase);
+    const personality = requestedMode || metrics.personalityMode;
 
-    // Fetch sessions
-    const { data: sessions } = await supabase
-      .from("focus_sessions")
-      .select("duration_minutes, status, created_at")
-      .eq("user_id", user.id)
-      .gte("created_at", startDate);
+    let summary = {
+      summary: "Quota fallback: Focus execution is being tracked. Keep sessions short, finish strongly, and review daily.",
+      priorities: [
+        "Protect one non-negotiable deep-work block per day",
+        "Cap each block to a realistic duration",
+        "End each session with one concrete next action",
+      ],
+      riskAlert: "AI quota unavailable. Weekly coaching switched to deterministic fallback.",
+    };
 
-    // Fetch distractions
-    const { count: distractionCount } = await supabase
-      .from("distraction_logs")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .gte("occurred_at", startDate);
+    try {
+      summary = await generateWeeklyAccountabilitySummary({
+        weeklyFocusHours: metrics.weeklyFocusHours,
+        completionRate: metrics.completionRate,
+        distractionCount: metrics.distractionCount,
+        streakDays: metrics.streakDays,
+        incompleteSessions: metrics.incompleteSessions,
+        personality,
+      });
+    } catch (aiError) {
+      console.error("Weekly summary generation failed, using fallback:", aiError);
+    }
 
-    const typedSessions = sessions || [];
+    const trendScore = Math.max(
+      0,
+      Math.min(100, metrics.completionRate - metrics.distractionCount * 0.7 + metrics.streakDays * 2 - metrics.incompleteSessions * 4),
+    );
 
-    // Calculate metrics
-    const totalMinutes = typedSessions
-      .filter(s => s.status === "completed")
-      .reduce((sum, s) => sum + s.duration_minutes, 0);
+    const weekStart = new Date();
+    weekStart.setHours(0, 0, 0, 0);
+    weekStart.setDate(weekStart.getDate() - 7);
 
-    const completionRate = typedSessions.length > 0
-      ? Math.round((typedSessions.filter(s => s.status === "completed").length / typedSessions.length) * 100)
-      : 0;
-
-    // Calculate streak (basic implementation)
-    // A robust streak would require querying daily records, 
-    // but for now we'll approximate based on presence of sessions in last few days.
-    // Let's rely on performance_metrics table if we were updating it, 
-    // but since we are computing on fly:
-    const streakDays = new Set(
-      typedSessions
-        .filter(s => s.status === "completed")
-        .map(s => new Date(s.created_at).toDateString())
-    ).size;
-
-    const summary = await generateWeeklyAccountabilitySummary({
-      weeklyFocusHours: Math.round(totalMinutes / 60 * 10) / 10,
-      completionRate,
-      distractionCount: distractionCount || 0,
-      streakDays,
-      personality
-    });
+    await supabase.from("performance_metrics").upsert(
+      {
+        user_id: user.id,
+        week_start: weekStart.toISOString().slice(0, 10),
+        total_focus_minutes: Math.round(metrics.weeklyFocusHours * 60),
+        completed_sessions: metrics.completedSessions,
+        completion_rate: metrics.completionRate,
+        distraction_count: metrics.distractionCount,
+        streak_days: metrics.streakDays,
+        trend_score: trendScore,
+        weekly_summary: summary.summary,
+      },
+      {
+        onConflict: "user_id,week_start",
+      },
+    );
 
     return NextResponse.json(summary);
-
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

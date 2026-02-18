@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
 import { generateSessionReflection } from "@/lib/openai";
+import type { PersonalityMode } from "@/types";
 
 export async function POST(request: Request) {
   try {
@@ -12,44 +13,53 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Session ID required" }, { status: 400 });
     }
 
-    // Fetch session details + distractions
-    const { data: session } = await supabase
-      .from("focus_sessions")
-      .select(`
-            *,
+    const [{ data: session }, { data: profile }] = await Promise.all([
+      supabase
+        .from("focus_sessions")
+        .select(
+          `
+            goal,
+            duration_minutes,
+            status,
             distraction_logs (
-                distraction_type,
-                notes
+              distraction_type,
+              notes
             )
-        `)
-      .eq("id", sessionId)
-      .eq("user_id", user.id)
-      .single();
+          `,
+        )
+        .eq("id", sessionId)
+        .eq("user_id", user.id)
+        .single(),
+      supabase.from("users").select("personality_mode").eq("id", user.id).single(),
+    ]);
 
     if (!session) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    // Generate AI Reflection
     const aiReflection = await generateSessionReflection({
       goal: session.goal,
       durationMinutes: session.duration_minutes,
       completed: session.status === "completed",
       distractions: session.distraction_logs || [],
-      personality: "tactical" // TODO: Fetch from user profile
+      personality: (profile?.personality_mode || "tactical") as PersonalityMode,
     });
 
-    const { error } = await supabase.from("session_reflections").insert({
-      session_id: sessionId,
-      user_id: user.id,
-      user_rating: rating || null,
-      user_feedback: feedback || null,
-      ai_feedback: aiReflection.summary,
-      // We could store wins/blockers/nextAction if we added columns, 
-      // but for now we'll just store the summary in ai_feedback 
-      // or extend the table later.
-      // Let's stick to the current schema: ai_feedback text.
-    });
+    const { error } = await supabase.from("session_reflections").upsert(
+      {
+        session_id: sessionId,
+        user_id: user.id,
+        summary: aiReflection.summary,
+        wins: aiReflection.wins,
+        blockers: aiReflection.blockers,
+        next_action: aiReflection.nextAction,
+        user_rating: rating || null,
+        user_feedback: feedback || null,
+      },
+      {
+        onConflict: "session_id",
+      },
+    );
 
     if (error) {
       console.error("Reflection insert error:", error);
@@ -57,7 +67,6 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(aiReflection);
-
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

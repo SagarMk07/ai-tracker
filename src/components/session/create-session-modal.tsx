@@ -3,6 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { PersonalityMode } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Modal } from "@/components/ui/modal";
 
 interface CreateSessionModalProps {
   personalityMode: PersonalityMode;
@@ -10,14 +13,43 @@ interface CreateSessionModalProps {
 
 export function CreateSessionModal({ personalityMode }: CreateSessionModalProps) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [goal, setGoal] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(50);
   const [riskFactors, setRiskFactors] = useState("");
+  const [intention, setIntention] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  function generateIntention() {
+    setError(null);
+
+    startTransition(async () => {
+      const response = await fetch("/api/focus/intention", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          goal,
+          durationMinutes,
+          riskFactors: riskFactors.split(",").map((value) => value.trim()).filter(Boolean),
+          personalityMode,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        setError(payload?.error || "Unable to generate intention.");
+        return;
+      }
+
+      const data = await response.json();
+      setIntention(data.intention);
+    });
+  }
+
   function submit() {
     setError(null);
+
     startTransition(async () => {
       const response = await fetch("/api/focus/sessions", {
         method: "POST",
@@ -25,52 +57,69 @@ export function CreateSessionModal({ personalityMode }: CreateSessionModalProps)
         body: JSON.stringify({
           goal,
           durationMinutes,
-          riskFactors: riskFactors.split(",").map((x) => x.trim()).filter(Boolean),
+          riskFactors: riskFactors.split(",").map((value) => value.trim()).filter(Boolean),
           personalityMode,
         }),
       });
 
       if (!response.ok) {
-        setError("Unable to create session.");
+        const payload = await response.json().catch(() => null);
+        setError(payload?.error || "Unable to create session.");
         return;
       }
 
       const data = await response.json();
+      setOpen(false);
+      setGoal("");
+      setRiskFactors("");
+      setIntention(null);
       router.push(`/focus?session=${data.sessionId}`);
     });
   }
 
   return (
-    <div className="panel p-5 space-y-4">
-      <h3 className="text-lg">Create Focus Session</h3>
-      <input
-        value={goal}
-        onChange={(e) => setGoal(e.target.value)}
-        placeholder="Goal"
-        className="w-full rounded-xl border border-slate-600 bg-slate-950/50 px-4 py-3"
-      />
-      <div className="flex gap-2">
-        {[25, 50, 90].map((option) => (
-          <button
-            type="button"
-            key={option}
-            onClick={() => setDurationMinutes(option)}
-            className={`rounded-full px-4 py-2 text-sm border ${durationMinutes === option ? "bg-[var(--accent)] text-slate-950 border-transparent" : "border-slate-600 text-slate-200"}`}
-          >
-            {option}m
-          </button>
-        ))}
-      </div>
-      <input
-        value={riskFactors}
-        onChange={(e) => setRiskFactors(e.target.value)}
-        placeholder="Risk factors, comma-separated"
-        className="w-full rounded-xl border border-slate-600 bg-slate-950/50 px-4 py-3"
-      />
-      <button disabled={isPending || !goal.trim()} onClick={submit} className="w-full rounded-xl bg-[var(--accent)] py-3 font-semibold text-slate-950 disabled:opacity-60">
-        {isPending ? "Creating..." : "Start Session"}
-      </button>
-      {error ? <p className="text-sm text-red-300">{error}</p> : null}
-    </div>
+    <>
+      <Button variant="primary" onClick={() => setOpen(true)}>
+        Create Focus Session
+      </Button>
+
+      <Modal open={open} onClose={() => setOpen(false)} title="New Deep Work Session">
+        <div className="space-y-3">
+          <Input value={goal} onChange={(event) => setGoal(event.target.value)} placeholder="What is your single outcome for this session?" />
+
+          <div className="flex gap-2">
+            {[25, 50, 90].map((option) => (
+              <Button
+                type="button"
+                key={option}
+                size="sm"
+                variant={durationMinutes === option ? "primary" : "ghost"}
+                onClick={() => setDurationMinutes(option)}
+              >
+                {option}m
+              </Button>
+            ))}
+          </div>
+
+          <Input
+            value={riskFactors}
+            onChange={(event) => setRiskFactors(event.target.value)}
+            placeholder="Risk factors (comma separated)"
+          />
+
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={generateIntention} disabled={isPending || !goal.trim()}>
+              {isPending ? "Generating..." : "Generate intention"}
+            </Button>
+            <Button variant="primary" onClick={submit} disabled={isPending || !goal.trim()}>
+              {isPending ? "Creating..." : "Start session"}
+            </Button>
+          </div>
+
+          {intention ? <p className="rounded-xl border border-[var(--border-soft)] bg-[var(--accent-soft)] px-3 py-2 text-sm text-[var(--text-secondary)]">{intention}</p> : null}
+          {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+        </div>
+      </Modal>
+    </>
   );
 }

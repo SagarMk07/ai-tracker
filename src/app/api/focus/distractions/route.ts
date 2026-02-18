@@ -19,6 +19,11 @@ export async function POST(request: Request) {
             occurred_at: new Date().toISOString(),
         });
 
+        if (error?.code === "PGRST205" && error.message?.includes("distraction_logs")) {
+            // Legacy DB missing distraction_logs table: keep session flow non-blocking.
+            return NextResponse.json({ ok: true, skipped: "distraction_logs_missing" });
+        }
+
         if (error) {
             console.error("Distraction log error:", error);
             return NextResponse.json({ error: "Failed to log distraction" }, { status: 500 });

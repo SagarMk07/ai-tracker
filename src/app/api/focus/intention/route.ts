@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
+import { ensureUserProfile, requireUser } from "@/lib/supabase/server";
 import { generateIntentionStatement } from "@/lib/openai";
+import type { PersonalityMode } from "@/types";
 
 export async function POST(request: Request) {
   try {
     const { user, supabase } = await requireUser();
+    await ensureUserProfile({ supabase, user });
     const body = await request.json();
     const goal = String(body.goal || "").trim();
     const durationMinutes = Number(body.durationMinutes || 0);
@@ -16,12 +18,17 @@ export async function POST(request: Request) {
 
     const { data: profile } = await supabase.from("users").select("personality_mode").eq("id", user.id).single();
 
-    const intention = await generateIntentionStatement({
-      goal,
-      durationMinutes,
-      riskFactors,
-      personality: profile?.personality_mode || "tactical",
-    });
+    let intention = `I will complete "${goal}" with full focus for ${durationMinutes} minutes.`;
+    try {
+      intention = await generateIntentionStatement({
+        goal,
+        durationMinutes,
+        riskFactors,
+        personality: (profile?.personality_mode || "tactical") as PersonalityMode,
+      });
+    } catch (aiError) {
+      console.error("Intention generation failed, using fallback:", aiError);
+    }
 
     return NextResponse.json({ intention });
   } catch (error) {

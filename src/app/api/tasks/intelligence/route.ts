@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     await supabase.from("tasks").insert({
       user_id: user.id,
       title: goal,
+      status: "todo",
       difficulty_score: intelligence.difficultyScore,
       suggested_time: intelligence.suggestedTime,
       ai_breakdown: intelligence.focusBlocks,

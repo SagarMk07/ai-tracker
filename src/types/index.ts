@@ -34,6 +34,8 @@ export interface SessionReflection {
   wins: string[];
   blockers: string[];
   next_action: string | null;
+  user_rating: number | null;
+  user_feedback: string | null;
   created_at: string;
 }
 

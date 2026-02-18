@@ -4,6 +4,7 @@ import type { PersonalityMode, TaskIntelligence } from "@/types";
 import { getEnvVar } from "@/lib/env";
 
 const client = new OpenAI({ apiKey: getEnvVar("OPENAI_API_KEY") });
+const model = "gpt-4o-mini";
 
 function parseJSON<T>(value: string | null, fallback: T): T {
   if (!value) return fallback;
@@ -27,7 +28,7 @@ export async function generateIntentionStatement(input: {
   personality: PersonalityMode;
 }) {
   const completion = await client.chat.completions.create({
-    model: "gpt-4o-mini",
+    model,
     temperature: 0.4,
     messages: [
       {
@@ -48,11 +49,11 @@ export async function generateSessionReflection(input: {
   goal: string;
   durationMinutes: number;
   completed: boolean;
-  distractions: Array<{ distractionType: string; intensity: number }>;
+  distractions: Array<{ distraction_type?: string; intensity?: number; notes?: string }>;
   personality: PersonalityMode;
 }) {
   const completion = await client.chat.completions.create({
-    model: "gpt-4o-mini",
+    model,
     temperature: 0.3,
     messages: [
       {
@@ -80,11 +81,12 @@ export async function generateWeeklyAccountabilitySummary(input: {
   completionRate: number;
   distractionCount: number;
   streakDays: number;
+  incompleteSessions: number;
   personality: PersonalityMode;
 }) {
   const completion = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0.4,
+    model,
+    temperature: 0.35,
     messages: [
       {
         role: "system",
@@ -99,9 +101,34 @@ export async function generateWeeklyAccountabilitySummary(input: {
   });
 
   return parseJSON(completion.choices[0]?.message?.content, {
-    summary: "This week shows progress, but consistency can tighten.",
-    priorities: ["Protect morning focus block", "Reduce context switching", "End each day with tomorrow plan"],
-    riskAlert: "If distraction frequency climbs next week, reduce session durations by 10 minutes temporarily.",
+    summary: "Execution trend is improving, but consistency and interruption control still need tightening.",
+    priorities: ["Protect your first deep-work block", "Reduce context switching", "Pre-commit tomorrow's top task"],
+    riskAlert: "Frequent incomplete sessions usually indicate overlong blocks. Trim planned durations by 10-15 minutes next week.",
+  });
+}
+
+export async function streamWeeklyAccountabilityNarrative(input: {
+  weeklyFocusHours: number;
+  completionRate: number;
+  distractionCount: number;
+  streakDays: number;
+  incompleteSessions: number;
+  personality: PersonalityMode;
+}) {
+  return client.chat.completions.create({
+    model,
+    stream: true,
+    temperature: 0.4,
+    messages: [
+      {
+        role: "system",
+        content: `You are Focus Guardian AI. ${personalityInstruction(input.personality)} Produce one concise weekly narrative summary in 80 words or fewer.`,
+      },
+      {
+        role: "user",
+        content: JSON.stringify(input),
+      },
+    ],
   });
 }
 
@@ -111,7 +138,7 @@ export async function generateTaskIntelligence(input: {
   personality: PersonalityMode;
 }): Promise<TaskIntelligence> {
   const completion = await client.chat.completions.create({
-    model: "gpt-4o-mini",
+    model,
     temperature: 0.3,
     messages: [
       {

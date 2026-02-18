@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import type { PersonalityMode } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const modes: PersonalityMode[] = ["soft", "tactical", "ruthless"];
 
@@ -12,34 +14,38 @@ interface PersonalitySelectorProps {
 export function PersonalitySelector({ currentMode }: PersonalitySelectorProps) {
   const [mode, setMode] = useState<PersonalityMode>(currentMode);
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   function save(nextMode: PersonalityMode) {
+    setError(null);
     setMode(nextMode);
     startTransition(async () => {
-      await fetch("/api/accountability/weekly-summary", {
+      const response = await fetch("/api/profile/personality", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ personalityMode: nextMode }),
+        body: JSON.stringify({ mode: nextMode }),
       });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        setMode(currentMode);
+        setError(payload?.error || "Unable to update mode. Please retry.");
+      }
     });
   }
 
   return (
-    <section className="panel p-5">
+    <Card className="p-5">
       <h3 className="text-lg">Personality Mode</h3>
-      <p className="text-sm text-slate-300 mt-1">Choose how strict your AI accountability should be.</p>
+      <p className="mt-1 text-sm text-[var(--text-secondary)]">Choose how strict your AI accountability should be.</p>
       <div className="mt-4 flex gap-2">
         {modes.map((item) => (
-          <button
-            key={item}
-            onClick={() => save(item)}
-            disabled={isPending}
-            className={`rounded-full px-4 py-2 text-sm capitalize border ${mode === item ? "bg-[var(--accent)] text-slate-950 border-transparent" : "border-slate-600 text-slate-200"}`}
-          >
+          <Button key={item} onClick={() => save(item)} disabled={isPending} size="sm" variant={mode === item ? "primary" : "ghost"}>
             {item}
-          </button>
+          </Button>
         ))}
       </div>
-    </section>
+      {error ? <p className="mt-3 text-sm text-rose-300">{error}</p> : null}
+    </Card>
   );
 }

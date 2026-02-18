@@ -5,7 +5,7 @@ export async function POST(request: Request) {
     try {
         const { user, supabase } = await requireUser();
         const body = await request.json();
-        const { title, description, difficultyScore, estimatedMinutes, subTasks } = body;
+        const { title, description, difficultyScore, estimatedMinutes, subTasks, suggestedTime } = body;
 
         if (!title) {
             return NextResponse.json({ error: "Title required" }, { status: 400 });
@@ -17,8 +17,9 @@ export async function POST(request: Request) {
             description: description || null,
             difficulty_score: difficultyScore || null,
             estimated_minutes: estimatedMinutes || null,
-            ai_suggested_blocks: subTasks || null,
-            is_completed: false,
+            suggested_time: suggestedTime || null,
+            ai_breakdown: subTasks || null,
+            status: "todo",
         });
 
         if (error) {

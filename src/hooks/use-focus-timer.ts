@@ -14,6 +14,11 @@ export function useFocusTimer({ sessionId, durationSeconds, onComplete }: UseFoc
     const [isPaused, setIsPaused] = useState(true); // Start paused until explicit start
     const endTimeRef = useRef<number | null>(null);
     const rafRef = useRef<number | null>(null);
+    const onCompleteRef = useRef(onComplete);
+
+    useEffect(() => {
+        onCompleteRef.current = onComplete;
+    }, [onComplete]);
 
     // Load state on mount
     useEffect(() => {
@@ -36,7 +41,7 @@ export function useFocusTimer({ sessionId, durationSeconds, onComplete }: UseFoc
 
                     if (remaining === 0) {
                         setTimeLeft(0);
-                        if (onComplete) onComplete();
+                        onCompleteRef.current?.();
                     } else {
                         setTimeLeft(remaining);
                         endTimeRef.current = endTime;
@@ -48,7 +53,7 @@ export function useFocusTimer({ sessionId, durationSeconds, onComplete }: UseFoc
                 console.error("Failed to parse timer state", e);
             }
         }
-    }, [sessionId, onComplete]);
+    }, [sessionId]);
 
     // Timer loop using requestAnimationFrame for smoothness
     useEffect(() => {
@@ -68,7 +73,7 @@ export function useFocusTimer({ sessionId, durationSeconds, onComplete }: UseFoc
                 setIsActive(false);
                 setIsPaused(true);
                 localStorage.removeItem(`${STORAGE_KEY_PREFIX}:${sessionId}`);
-                if (onComplete) onComplete();
+                onCompleteRef.current?.();
             } else {
                 rafRef.current = requestAnimationFrame(tick);
             }
@@ -79,7 +84,7 @@ export function useFocusTimer({ sessionId, durationSeconds, onComplete }: UseFoc
         return () => {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
         };
-    }, [isActive, isPaused, sessionId, onComplete]);
+    }, [isActive, isPaused, sessionId]);
 
     // Persist state
     useEffect(() => {

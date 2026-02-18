@@ -4,7 +4,11 @@ const requiredServerEnv = [
   "OPENAI_API_KEY",
 ] as const;
 
-export function getEnvVar(name: (typeof requiredServerEnv)[number]) {
+type RequiredServerEnv = (typeof requiredServerEnv)[number];
+
+let validated = false;
+
+export function getEnvVar(name: RequiredServerEnv) {
   const value = process.env[name];
   if (!value) {
     throw new Error(`Missing required env var: ${name}`);
@@ -13,9 +17,14 @@ export function getEnvVar(name: (typeof requiredServerEnv)[number]) {
 }
 
 export function validateEnv() {
-  for (const key of requiredServerEnv) {
-    if (!process.env[key]) {
-      throw new Error(`Environment validation failed. Missing: ${key}`);
-    }
+  if (validated) {
+    return;
   }
+
+  const missing = requiredServerEnv.filter((key) => !process.env[key]);
+  if (missing.length) {
+    throw new Error(`Environment validation failed. Missing: ${missing.join(", ")}`);
+  }
+
+  validated = true;
 }

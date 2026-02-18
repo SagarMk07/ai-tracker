@@ -1,3 +1,5 @@
+import { Card } from "@/components/ui/card";
+
 interface DistractionFrequencyProps {
   data: Array<{ label: string; count: number }>;
 }
@@ -6,12 +8,12 @@ export function DistractionFrequency({ data }: DistractionFrequencyProps) {
   const total = data.reduce((sum, item) => sum + item.count, 0) || 1;
 
   return (
-    <div className="panel p-5">
+    <Card className="p-5">
       <h3 className="text-lg">Distraction Frequency</h3>
       <div className="mt-4 space-y-3">
         {data.map((item) => (
           <div key={item.label}>
-            <div className="flex justify-between text-sm text-slate-300">
+            <div className="flex justify-between text-sm text-[var(--text-secondary)]">
               <span>{item.label}</span>
               <span>{item.count}</span>
             </div>
@@ -24,6 +26,6 @@ export function DistractionFrequency({ data }: DistractionFrequencyProps) {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
